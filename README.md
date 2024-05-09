@@ -1,6 +1,5 @@
 # useCallback
 
-```
 The React useCallback Hook returns a memoized callback function.
 
 Think of memoization as caching a value so that it does not need to be recalculated.
@@ -12,7 +11,6 @@ The useCallback Hook only runs when one of its dependencies update.
 This can improve performance.
 
 The useCallback and useMemo Hooks are similar. The main difference is that useMemo returns a memoized value and useCallback returns a memoized function.
-```
 
 ---
 
