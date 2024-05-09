@@ -140,3 +140,85 @@ In this example:
 You would need to handle the actual authentication logic in your application, such as verifying user credentials and setting the `loggedIn` state accordingly. Additionally, you may want to implement features like session persistence or token-based authentication for a more robust authentication system.
 
 ---
+
+# useContext
+
+The Context API in React is a way to manage state that can be accessed by multiple components throughout the component tree, without having to pass props manually at each level. It provides a convenient way to share data between components that are not directly connected through the component hierarchy.
+
+Here's a brief overview:
+
+1. **Provider-Consumer Pattern**: Context works on a provider-consumer pattern. A parent component provides the context, and child components consume it.
+
+2. **Create Context**: You create a context using `React.createContext()`. This returns an object with a `Provider` and a `Consumer`.
+
+3. **Provider**: The `Provider` component is used to wrap the part of the component tree where you want to make the context available. It takes a `value` prop, which is the data you want to share.
+
+4. **Consumer**: The `Consumer` component allows consuming the context within a component. It uses a render prop pattern or the `useContext` hook to access the context value.
+
+5. **useContext Hook**: In addition to using the `Consumer`, React provides a `useContext` hook, which allows functional components to consume context more easily.
+
+6. **Updating Context**: The context provider re-renders whenever the `value` prop changes. Components consuming the context re-render whenever the context they depend on changes.
+
+7. **Performance Considerations**: Context should be used for sharing data that is truly global to the application or deeply nested components. It's not recommended to use context as a replacement for prop drilling in all cases, as it can lead to unnecessary re-renders if overused.
+
+Overall, the Context API provides a powerful mechanism for managing global state in React applications and can be particularly useful for managing themes, user authentication, or language preferences across components.
+
+Here's a simple example demonstrating the usage of the Context API in React:
+
+```javascript
+import React, { createContext, useState, useContext } from "react";
+import ReactDOM from "react-dom";
+
+// Step 1: Create a context
+const ThemeContext = createContext();
+
+// Step 2: Create a provider component
+const ThemeProvider = ({ children }) => {
+	const [theme, setTheme] = useState("light");
+
+	const toggleTheme = () => {
+		setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+	};
+
+	return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+};
+
+// Step 3: Create a consumer hook or component to access the context
+const useTheme = () => {
+	const context = useContext(ThemeContext);
+	if (!context) {
+		throw new Error("useTheme must be used within a ThemeProvider");
+	}
+	return context;
+};
+
+// Example usage of the ThemeProvider and useTheme hook
+const App = () => {
+	const { theme, toggleTheme } = useTheme();
+
+	return (
+		<div className={theme}>
+			<button onClick={toggleTheme}>Toggle Theme</button>
+			<h1>{theme === "light" ? "Light Theme" : "Dark Theme"}</h1>
+		</div>
+	);
+};
+
+// Step 4: Wrap your application with the provider
+ReactDOM.render(
+	<ThemeProvider>
+		<App />
+	</ThemeProvider>,
+	document.getElementById("root")
+);
+```
+
+In this example:
+
+-   We create a `ThemeContext` using `createContext`.
+-   We create a `ThemeProvider` component to provide the theme state and the function to toggle the theme.
+-   We create a custom hook `useTheme` to consume the theme context within components.
+-   The `App` component consumes the theme context using the `useTheme` hook.
+-   Finally, we wrap our `App` component with the `ThemeProvider` component to make the theme context available throughout the component tree.
+
+When you click the "Toggle Theme" button, it will switch between light and dark themes, and all components consuming the theme context will re-render with the updated theme.
