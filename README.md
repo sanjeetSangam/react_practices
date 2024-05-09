@@ -14,106 +14,129 @@ This can improve performance.
 The useCallback and useMemo Hooks are similar. The main difference is that useMemo returns a memoized value and useCallback returns a memoized function.
 ```
 
+---
+
 # Custom Hooks in React
 
-```
-Custom hooks in React are a powerful feature that allows you to extract and reuse stateful logic from components. They are JavaScript functions whose names start with "use" and can call other hooks if necessary. Here's a brief overview of how custom hooks work:
+**Custom Hooks in React**
 
-Create a Function: Begin by creating a JavaScript function. The function name should start with "use" to follow the convention.
-javascript
-Copy code
-import { useState, useEffect } from 'react';
+Custom hooks in React are JavaScript functions that allow you to extract and reuse logic from components. They start with the word "use" and can contain state, side effects, or any other functionality. Here's how they work:
+
+**1. Definition**: Custom hooks start with "use" and are used to abstract and share logic between components.
+
+**2. Purpose**: They help to keep components clean by extracting reusable logic into separate functions.
+
+**3. Usage**: Create a function with the logic you want to reuse, utilizing built-in hooks like `useState` and `useEffect`.
+
+```javascript
+import { useState, useEffect } from "react";
 
 function useCustomHook(initialValue) {
-    // Your logic here
+	const [value, setValue] = useState(initialValue);
+
+	useEffect(() => {
+		console.log("Value changed:", value);
+	}, [value]);
+
+	const increment = () => {
+		setValue((prevValue) => prevValue + 1);
+	};
+
+	return { value, increment };
 }
-Define Logic: Write the logic inside the custom hook function. You can use existing hooks like useState, useEffect, useRef, etc., within your custom hook.
-javascript
-Copy code
-function useCustomHook(initialValue) {
-    const [value, setValue] = useState(initialValue);
-
-    useEffect(() => {
-        // Do something on component mount or update
-        console.log('Value changed:', value);
-    }, [value]); // useEffect dependency array
-
-    const increment = () => {
-        setValue(prevValue => prevValue + 1);
-    };
-
-    return { value, increment };
-}
-Use the Custom Hook: You can then use this custom hook in any functional component.
-javascript
-Copy code
-import React from 'react';
-
-function MyComponent() {
-    const { value, increment } = useCustomHook(0);
-
-    return (
-        <div>
-            <p>Value: {value}</p>
-            <button onClick={increment}>Increment</button>
-        </div>
-    );
-}
-Custom hooks provide a clean way to separate concerns in your React code, making it easier to manage and reuse logic across components.
-
-Here's an example of a custom hook to fetch data from an API:
-
-javascript
-Copy code
-import { useState, useEffect } from 'react';
-
-function useFetch(url) {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const result = await response.json();
-                setData(result);
-            } catch (error) {
-                setError(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-
-    }, [url]); // useEffect dependency array
-
-    return { data, loading, error };
-}
-
-export default useFetch;
-You can then use this hook in any component to fetch data:
-
-javascript
-Copy code
-import React from 'react';
-import useFetch from './useFetch';
-
-function MyComponent() {
-    const { data, loading, error } = useFetch('https://api.example.com/data');
-
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error.message}</p>;
-
-    return (
-        <div>
-            {/* Render your data */}
-        </div>
-    );
-}
-This way, you can reuse this logic in multiple components without duplicating code. Custom hooks allow you to keep your components clean and focused on rendering UI.
 ```
+
+**4. Example Usage in Component**:
+
+```javascript
+import React from "react";
+import useCustomHook from "./useCustomHook";
+
+function MyComponent() {
+	const { value, increment } = useCustomHook(0);
+
+	return (
+		<div>
+			<p>Value: {value}</p>
+			<button onClick={increment}>Increment</button>
+		</div>
+	);
+}
+```
+
+**5. Benefits**:
+
+-   **Reusability**: Logic can be easily reused across multiple components.
+-   **Separation of Concerns**: Keeps components focused on UI rendering.
+-   **Cleaner Code**: Reduces duplication and improves maintainability.
+
+Custom hooks are a powerful feature in React for creating composable and reusable logic across your application.
+
+---
+
+# React-router-dom
+
+Protected routes are routes that should only be accessible to authenticated users. If a user is not authenticated, they should be redirected to a login page.
+
+First, you would typically have a layout component that contains the common layout structure of your application. Within this layout, you can define your routes, including both public and protected routes.
+
+Here's a basic example:
+
+```javascript
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
+
+// Assume these are your components for various routes
+import Home from "./components/Home";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+
+// Define a simple authentication context
+const AuthContext = React.createContext();
+
+function App() {
+	const [loggedIn, setLoggedIn] = useState(false);
+
+	return (
+		<AuthContext.Provider value={{ loggedIn, setLoggedIn }}>
+			<Router>
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/login" element={<Login />} />
+					{/* Protected route */}
+					<Route
+						path="/dashboard"
+						element={<ProtectedRoute component={<Dashboard />} />}
+					/>
+				</Routes>
+			</Router>
+		</AuthContext.Provider>
+	);
+}
+
+// ProtectedRoute component to handle authentication
+function ProtectedRoute({ component }) {
+	const { loggedIn } = useContext(AuthContext);
+
+	// If user is not logged in, redirect to login page
+	if (!loggedIn) {
+		return <Navigate to="/login" />;
+	}
+
+	// If user is logged in, render the protected component
+	return component;
+}
+
+export default App;
+```
+
+In this example:
+
+-   We define a `BrowserRouter` as the router container for our routes.
+-   We have a simple `AuthContext` to manage the authentication state.
+-   The `ProtectedRoute` component checks if the user is authenticated (`loggedIn`). If they are, it renders the protected component passed as a prop (`component`). If not, it redirects the user to the login page using the `Navigate` component.
+-   Within the `App` component, we define our routes. The `/dashboard` route is protected and will only be accessible if the user is authenticated.
+
+You would need to handle the actual authentication logic in your application, such as verifying user credentials and setting the `loggedIn` state accordingly. Additionally, you may want to implement features like session persistence or token-based authentication for a more robust authentication system.
+
+---
